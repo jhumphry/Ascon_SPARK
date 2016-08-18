@@ -178,7 +178,8 @@ is
       Key_Ptr := Key'First;
       for I in 1..Key_Words loop
          pragma Loop_Invariant (Key_Ptr = Key'First + Storage_Offset(I-1)*8);
-         S(4-I+1) := S(4-I+1) xor Storage_To_Word(Key(Key_Ptr..Key_Ptr+7));
+         S(4-Key_Words+I) := S(4-Key_Words+I) xor
+           Storage_To_Word(Key(Key_Ptr..Key_Ptr+7));
          Key_Ptr := Key_Ptr + 8;
       end loop;
 
