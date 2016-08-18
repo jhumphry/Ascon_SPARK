@@ -27,9 +27,9 @@ procedure Display_Ascon_Traces is
    M : Storage_Array(0..4) := (16#61#, 16#73#, 16#63#, 16#6f#, 16#6e#);
    C : Storage_Array(0..4);
    T : Ascon.Tag_Type;
---
---     M2 : Storage_Array(0..Test_Message_Length-1);
---     T2 : Ascon.Tag_Type;
+
+   M2 : Storage_Array(0..4);
+   T2 : Ascon.Tag_Type;
 
 begin
 
@@ -63,34 +63,35 @@ begin
    New_Line;
    New_Line;
 
---     Put_Line("DECRYPTION");
---     New_Line;
---
---     State_Trace := Initialise(K, N);
---     Put_Line("Initialise state with key and nonce");
---
---     Absorb(State_Trace, A, 16#01#);
---     Put_Line("Absorbing header into state");
---
---     Decrypt(State_Trace, C, M2, 16#02#);
---     Put_Line("Decrypting message");
---
---     Finalise(State_Trace, T2, 16#08#);
---     Put_Line("Finalising state");
---     New_Line;
---
---     Put_Line("Recovered plaintext:");
---     Put_Storage_Array(M2);
---     Put_Line("Recovered Tag:");
---     Put_Storage_Array(T2);
---     New_Line;
---
---     Put_Line((if M /= M2
---              then "ERROR :Plaintexts don't match"
---              else "Plaintexts match"));
---     Put_Line((if T /= T2
---              then "ERROR: Tags don't match"
---              else "Tags match"));
---     New_Line;
+   Put_Line("DECRYPTION");
+   New_Line;
+
+   State_Trace := Initialise(K, N);
+   Put_Line("Initialise state with key and nonce");
+
+   Absorb(State_Trace, A);
+   Put_Line("Absorbing header into state");
+
+   Decrypt(State_Trace, C, M2);
+   Put_Line("Decrypting message");
+
+   Finalise(State_Trace, K, T2);
+   Put_Line("Finalising state");
+   New_Line;
+
+   Put_Line("Recovered plaintext:");
+   Put_Storage_Array(M2);
+   New_Line;
+   Put_Line("Recovered Tag:");
+   Put_Storage_Array(T2);
+   New_Line;
+
+   Put_Line((if M /= M2
+            then "ERROR :Plaintexts don't match"
+            else "Plaintexts match"));
+   Put_Line((if T /= T2
+            then "ERROR: Tags don't match"
+            else "Tags match"));
+   New_Line;
 
 end Display_Ascon_Traces;

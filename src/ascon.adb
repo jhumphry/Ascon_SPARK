@@ -282,105 +282,115 @@ is
                       """C"" might not be initialized",
                       "The loop initialises C from C'First to C_Index-1 and the second block of code initialises C_Index to C'Last");
 
-   procedure Decrypt_Block (S : in out State;
-                            C : in Rate_Storage_Array;
-                            M : out Rate_Storage_Array)
-     with Inline is
---        C_i : Word;
---        M_Index : Storage_Offset := M'First;
---        C_Index : Storage_Offset := C'First;
+   procedure Absorb_C_Block (S : in out State;
+                             C : in Storage_Array;
+                             M : out Storage_Array)
+     with Inline, Pre => (M'Length = 8 and C'Length = 8 and
+                            M'Last < Storage_Offset'Last and
+                              C'Last < Storage_Offset'Last) is
+      C_i : Word;
+      M_Index : Storage_Offset := M'First;
+      C_Index : Storage_Offset := C'First;
    begin
---        S(15) := S(15) xor v;
---        F_l(S);
---        for I in 0..Rate_Words - 1 loop
---           pragma Loop_Invariant(M_Index = M'First + Storage_Offset(I) * Bytes);
---           pragma Loop_Invariant(C_Index = C'First + Storage_Offset(I) * Bytes);
---           C_i := Storage_Array_To_Word(C(C_Index .. C_Index + Bytes - 1));
---           M(M_Index .. M_Index + Bytes - 1) := Word_To_Storage_Array(S(I) xor C_i);
---           S(I) := C_i;
---
---           M_Index := M_Index + Bytes;
---           C_Index := C_Index + Bytes;
---        end loop;
---
---        pragma Assert (M_Index = M'Last + 1);
---        pragma Assert (C_Index = C'Last + 1);
-      null;
-   end Decrypt_Block;
+      for I in 0..Rate_Words - 1 loop
+         pragma Loop_Invariant(M_Index = M'First + Storage_Offset(I) * 8);
+         pragma Loop_Invariant(C_Index = C'First + Storage_Offset(I) * 8);
 
-   procedure Decrypt_Last_Block (S : in out State;
-                                 C : in Storage_Array;
-                                 M : out Storage_Array)
---       with Inline, Pre => (M'Length = C'Length and C'Length < Rate_Bytes_I) is
-   is
---        Last_Block : Storage_Array(1..Rate_Bytes_SO);
---        C_i : Word;
---        Index : Storage_Offset := Last_Block'First;
+         C_i := Storage_To_Word(C(C_Index .. C_Index + 7));
+         M(M_Index .. M_Index + 7) := Word_To_Storage(S(I) xor C_i);
+         S(I) := C_i;
+
+         M_Index := M_Index + 8;
+         C_Index := C_Index + 8;
+      end loop;
+
+      pragma Assert (M_Index = M'Last + 1);
+      pragma Assert (C_Index = C'Last + 1);
+   end Absorb_C_Block;
+
+   pragma Annotate (GNATprove, False_Positive,
+                    """M"" might not be initialized",
+                    "The assertion on the final value of M_Index shows that the whole of M is initialised");
+
+
+   procedure Absorb_Last_C_Block (S : in out State;
+                                  C : in Storage_Array;
+                                  M : out Storage_Array)
+     with Inline, Pre => (M'Length = C'Length and
+                            C'Length < rate/8 and
+                              M'Last < Storage_Offset'Last and
+                                C'Last < Storage_Offset'Last) is
+      Last_Block : Storage_Array(1..Rate_SE);
+      Index : Storage_Offset := Last_Block'First;
+      C_Index : Storage_Offset := C'First;
    begin
---        S(15) := S(15) xor v;
---        F_l(S);
---
---        for I in 0..Rate_Words-1 loop
---           pragma Loop_Invariant (Index = Last_Block'First + Storage_Offset(I) * Bytes);
---           Last_Block(Index .. Index + Bytes-1) := Word_To_Storage_Array(S(I));
---           Index := Index + Bytes;
---        end loop;
---
---        Last_Block(1..C'Length) := C;
---        Last_Block(C'Length+1) := Last_Block(C'Length+1) xor 16#01#;
---        Last_Block(Last_Block'Last) := Last_Block(Last_Block'Last) xor 16#80#;
---
---        Index := Last_Block'First;
---        for I in 0..Rate_Words - 1 loop
---           pragma Loop_Invariant (Index = Last_Block'First + Storage_Offset(I) * Bytes);
---           C_i := Storage_Array_To_Word(Last_Block(Index .. Index + Bytes - 1));
---           Last_Block(Index .. Index + Bytes - 1)
---                      := Word_To_Storage_Array(S(I) xor C_i);
---           S(I) := C_i;
---           Index := Index + Bytes;
---        end loop;
---
---        pragma Assert (Index = Last_Block'Last + 1);
---
---        M := Last_Block(1..C'Length);
-      null;
-   end Decrypt_Last_Block;
 
---     pragma Annotate (GNATprove, False_Positive,
---                      """Last_Block"" might not be initialized",
---                      "Initialisation and assertion demonstrate that Index is incremented over every element of Last_Block");
+      for I in 0..Rate_Words-1 loop
+         pragma Loop_Invariant (Index = Last_Block'First + Storage_Offset(I) * 8);
+         Last_Block(Index .. Index + 7) := Word_To_Storage(S(I));
+         Index := Index + 8;
+      end loop;
+
+      pragma Assert (Index = Last_Block'Last+1);
+
+      Index := Last_Block'First;
+      for I in M'Range loop
+         pragma Loop_Invariant(C_Index = C'First + (I - M'First));
+         pragma Loop_Invariant(Index = Last_Block'First + (I - M'First));
+         M(I) := Last_Block(Index) xor C(C_Index);
+         Index := Index + 1;
+         C_Index := C_Index + 1;
+      end loop;
+
+      Last_Block(1..C'Length) := C;
+      Last_Block(C'Length+1) := Last_Block(C'Length+1) xor 16#80#;
+
+      Index := Last_Block'First;
+      for I in 0..Rate_Words-1 loop
+         pragma Loop_Invariant (Index = Last_Block'First + Storage_Offset(I) * 8);
+         S(I) := Storage_To_Word(Last_Block(Index .. Index + 7));
+         Index := Index + 8;
+      end loop;
+
+   end Absorb_Last_C_Block;
+
+   pragma Annotate (GNATprove, False_Positive,
+                    """M"" might not be initialized",
+                    "The loop over M'Range demonstrates that M is fully initialised");
+
+   pragma Annotate (GNATprove, False_Positive,
+                    """Last_Block"" might not be initialized",
+                    "The assertion demonstrates that Last_Block is fully initialised");
 
    procedure Decrypt (S : in out State;
                       C : in Storage_Array;
                       M : out Storage_Array) is
---        Number_Full_Blocks : constant Storage_Offset := C'Length / Rate_Bytes_SO;
---        M_Index : Storage_Offset := M'First;
---        C_Index : Storage_Offset := C'First;
+      Number_Full_Blocks : constant Storage_Offset := C'Length / Rate_SE;
+      M_Index : Storage_Offset := M'First;
+      C_Index : Storage_Offset := C'First;
    begin
---        if M'Length > 0 then
---           for I in 1..Number_Full_Blocks loop
---              pragma Loop_Invariant(M_Index = M'First + (I-1) * Rate_Bytes_SO);
---              pragma Loop_Invariant(C_Index = C'First + (I-1) * Rate_Bytes_SO);
---              Decrypt_Block(S => S,
---                            C => C(C_Index..C_Index+Rate_Bytes_SO-1),
---                            M => M(M_Index..M_Index+Rate_Bytes_SO-1),
---                            v => v);
---              M_Index := M_Index + Rate_Bytes_SO;
---              C_Index := C_Index + Rate_Bytes_SO;
---           end loop;
---
---           Decrypt_Last_Block(S => S,
---                              C => C(C_Index..C'Last),
---                              M => M(M_Index..M'Last),
---                              v => v);
---
---        end if;
-      null;
+      if M'Length > 0 then
+         for I in 1..Number_Full_Blocks loop
+            pragma Loop_Invariant(M_Index = M'First + (I-1) * Rate_SE);
+            pragma Loop_Invariant(C_Index = C'First + (I-1) * Rate_SE);
+            Absorb_C_Block(S => S,
+                           C => C(C_Index..C_Index+Rate_SE-1),
+                           M => M(M_Index..M_Index+Rate_SE-1));
+            p_b(S);
+            M_Index := M_Index + Rate_SE;
+            C_Index := C_Index + Rate_SE;
+         end loop;
+
+         Absorb_Last_C_Block(S => S,
+                             C => C(C_Index..C'Last),
+                             M => M(M_Index..M'Last));
+
+      end if;
    end Decrypt;
 
---     pragma Annotate (GNATprove, False_Positive,
---                      """M"" might not be initialized",
---                      "The loop initialises M from M'First to M_Index-1 and the call to Decrypt_Last_Block initialises M_Index to M'Last");
+   pragma Annotate (GNATprove, False_Positive,
+                    """M"" might not be initialized",
+                    "The loop initialises M from M'First to M_Index-1 and the call to Decrypt_Last_Block initialises M_Index to M'Last");
 
    procedure Finalise (S : in out State; Key : in Key_Type; Tag : out Tag_Type) is
       Key_Ptr : Storage_Offset := Key'First;
