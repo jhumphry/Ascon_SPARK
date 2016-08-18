@@ -244,6 +244,11 @@ is
       pragma Assert (C_Index = C'Last + 1);
    end Absorb_M_Block;
 
+   pragma Annotate (GNATprove, False_Positive,
+                    """C"" might not be initialized",
+                    "The assertion on C_Index demonstrates that C is fully initialised");
+
+
    procedure Encrypt (S : in out State;
                       M : in Storage_Array;
                       C : out Storage_Array) is
@@ -278,9 +283,9 @@ is
       end if;
    end Encrypt;
 
-     pragma Annotate (GNATprove, False_Positive,
-                      """C"" might not be initialized",
-                      "The loop initialises C from C'First to C_Index-1 and the second block of code initialises C_Index to C'Last");
+   pragma Annotate (GNATprove, False_Positive,
+                    """C"" might not be initialized",
+                    "The loop initialises C from C'First to C_Index-1 and the second block of code initialises C_Index to C'Last");
 
    procedure Absorb_C_Block (S : in out State;
                              C : in Storage_Array;
