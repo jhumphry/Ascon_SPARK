@@ -38,6 +38,7 @@ is
          16#0000000000000000005a#, 16#0000000000000000004b#);
 
    Rate_SE : constant Storage_Offset := Storage_Offset(rate/8);
+   Rate_Words : constant := rate/64;
    Key_Words : constant := key_bits / 64;
    Nonce_Words : constant := nonce_bits / 64;
 
@@ -184,43 +185,38 @@ is
       return S;
    end Initialise;
 
-   procedure Absorb_Block (S : in out State;
-                           X : in Rate_Storage_Array)
-     with Inline is
+   procedure Absorb_AD_Block (S : in out State;
+                           X : in Storage_Array)
+     with Inline, Pre => (X'Length = 8 and X'Last < Storage_Offset'Last) is
       X_Index : Storage_Offset := X'First;
    begin
---        S(15) := S(15) xor v;
---        F_l(S);
---        for I in 0..Rate_Words - 1 loop
---           pragma Loop_Invariant (X_Index = X'First + Storage_Offset(I) * Bytes);
---           S(I) := S(I) xor
---             Storage_Array_To_Word(X(X_Index .. X_Index + Bytes - 1));
---           X_Index := X_Index + Bytes;
---        end loop;
---
---        pragma Assert (X_Index = X'Last + 1);
-      null;
-   end Absorb_Block;
+      for I in 0..Rate_Words - 1 loop
+         pragma Loop_Invariant (X_Index = X'First + Storage_Offset(I) * 8);
+         S(I) := S(I) xor
+           Storage_To_Word(X(X_Index .. X_Index + 7));
+         X_Index := X_Index + 8;
+      end loop;
+      pragma Assert (X_Index = X'Last + 1);
+
+      p_b(S);
+   end Absorb_AD_Block;
 
    procedure Absorb (S : in out State; X : in Storage_Array) is
---        Number_Full_Blocks : constant Storage_Offset
---          := X'Length / Rate_Bytes_SO;
---        X_Index : Storage_Offset := X'First;
+      Number_Full_Blocks : constant Storage_Offset := X'Length / Rate_SE;
+      X_Index : Storage_Offset := X'First;
    begin
---        if X'Length > 0 then
---
---           for I in 1..Number_Full_Blocks loop
---              pragma Loop_Invariant (X_Index = X'First + (I-1) * Rate_Bytes_SO);
---              Absorb_Block(S,
---                           X(X_Index .. X_Index + Rate_Bytes_SO-1),
---                           v);
---              X_Index := X_Index + Rate_Bytes_SO;
---           end loop;
---
---           Absorb_Block(S, Pad_r(X(X_Index..X'Last)), v);
---
---        end if;
-      null;
+      if X'Length > 0 then
+
+         for I in 1..Number_Full_Blocks loop
+            pragma Loop_Invariant (X_Index = X'First + (I-1) * Rate_SE);
+            Absorb_AD_Block(S, X(X_Index .. X_Index + Rate_SE-1));
+            X_Index := X_Index + Rate_SE;
+         end loop;
+
+         Absorb_AD_Block(S, Pad_r(X(X_Index..X'Last)));
+      end if;
+
+      S(4) := S(4) xor 1;
    end Absorb;
 
    procedure Encrypt_Block (S : in out State;

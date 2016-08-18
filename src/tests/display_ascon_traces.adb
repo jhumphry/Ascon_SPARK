@@ -41,10 +41,10 @@ begin
    Put_State(State_Trace);
    New_Line;
 
---     Absorb(State_Trace, A, 16#01#);
---     Put_Line("State after header processing:");
---     Put_State(State_Trace);
---     New_Line;
+   Absorb(State_Trace, A);
+   Put_Line("State after associated data processing:");
+   Put_State(State_Trace);
+   New_Line;
 --
 --     Encrypt(State_Trace, M, C, 16#02#);
 --     Put_Line("State after message encryption:");
