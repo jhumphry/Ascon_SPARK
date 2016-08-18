@@ -40,6 +40,7 @@ is
    Rate_SE : constant Storage_Offset := Storage_Offset(rate/8);
    Rate_Words : constant := rate/64;
    Key_Words : constant := key_bits / 64;
+   Tag_Words : constant := tag_bits / 64;
    Nonce_Words : constant := nonce_bits / 64;
 
    subtype Rate_Storage_Array is Storage_Array(1..Rate_SE);
@@ -381,51 +382,39 @@ is
 --                      """M"" might not be initialized",
 --                      "The loop initialises M from M'First to M_Index-1 and the call to Decrypt_Last_Block initialises M_Index to M'Last");
 
-   procedure Finalise (S : in out State; Tag : out Tag_Type) is
---        Tag_Index : Storage_Offset := Tag'First;
---        Tag_Words_Remaining : Natural := Tag'Length / Natural(Bytes);
---        Iterations_Needed : constant Positive := (t / (r+1)) + 1;
+   procedure Finalise (S : in out State; Key : in Key_Type; Tag : out Tag_Type) is
+      Key_Ptr : Storage_Offset := Key'First;
+      Tag_Ptr : Storage_Offset := Tag'First;
    begin
---        S(15) := S(15) xor v;
---        F_l(S);
---        F_l(S);
---
---        Finalise_Iterations:
---        for I in 1..Iterations_Needed loop
---           pragma Loop_Invariant (Tag_Index = Tag'First +
---                                    Storage_Offset((I-1) * Rate_Words));
---
---           pragma Loop_Invariant (Tag_Words_Remaining = Tag'Length / Natural(Bytes)
---                                  - (I-1) * Rate_Words);
---
---           for J in 0 .. Integer'Min(Rate_Words, Tag_Words_Remaining)-1 loop
---
---              pragma Loop_Invariant (Tag_Index = Tag'First +
---                                       Storage_Offset((I-1) * Rate_Words) +
---                                         Storage_Offset(J) * Bytes);
---
---              Tag(Tag_Index .. Tag_Index + Bytes - 1)
---                := Word_To_Storage_Array(S(J));
---              Tag_Index := Tag_Index + Bytes;
---
---           end loop;
---
---           Tag_Words_Remaining := Integer'Max(0, Tag_Words_Remaining - Rate_Words);
---
---           exit Finalise_Iterations when Tag_Words_Remaining = 0;
---
---           S(15) := S(15) xor v;
---           F_l(S);
---        end loop Finalise_Iterations;
---
---        pragma Assert (Tag_Index = Tag'Last + 1);
+      for I in 1..Key_Words loop
+         pragma Loop_Invariant (Key_Ptr = Key'First + Storage_Offset(I-1)*8);
+         S(Rate_Words + I - 1) := S(Rate_Words + I - 1) xor
+           Storage_To_Word(Key(Key_Ptr..Key_Ptr+7));
+         Key_Ptr := Key_Ptr + 8;
+      end loop;
 
-      null;
+      p_a(S);
+
+      for I in 1..Tag_Words loop
+         pragma Loop_Invariant (Tag_Ptr = Tag'First + Storage_Offset(I-1)*8);
+         Tag(Tag_Ptr .. Tag_Ptr+7) := Word_To_Storage(S(4-Tag_Words+I));
+         Tag_Ptr := Tag_Ptr + 8;
+      end loop;
+
+      pragma Assert (Tag_Ptr = Tag'Last + 1);
+
+      Key_Ptr := Key'First;
+      for I in Tag'Range loop
+         pragma Loop_Invariant (Key_Ptr = Key'First + I-Tag'First);
+         Tag(I) := Tag(I) xor Key(Key_Ptr);
+         Key_Ptr := Key_Ptr + 1;
+      end loop;
+
    end Finalise;
 
---     pragma Annotate (GNATprove, False_Positive,
---                      """Tag"" might not be initialized",
---                      "Initialisation and assertion demonstrate that Tag_Index is incremented over every element of Tag");
+   pragma Annotate (GNATprove, False_Positive,
+                    """Tag"" might not be initialized",
+                    "Initialisation and assertion demonstrate that Tag_Index is incremented over every element of Tag");
 
    -- ***
    -- High-level API as described in Algorithm 1 of the Ascon specification
@@ -441,7 +430,7 @@ is
    begin
       Absorb(S, A);
       Encrypt(S, M, C);
-      Finalise(S, T);
+      Finalise(S, K, T);
       pragma Unreferenced (S);
    end AEADEnc;
 
@@ -457,7 +446,7 @@ is
    begin
       Absorb(S, A);
       Decrypt(S, C, M);
-      Finalise(S, T2);
+      Finalise(S, K, T2);
       pragma Unreferenced (S);
       if Compare_Tags_Constant_Time(T, T2) then
          Valid := True;

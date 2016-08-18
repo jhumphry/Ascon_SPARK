@@ -134,12 +134,14 @@ private
                     Valid_Storage_Array_Parameter(C'Length, C'Last) and
                       Valid_Storage_Array_Parameter(M'Length, M'Last));
 
-   procedure Finalise (S : in out State; Tag : out Tag_Type);
+   procedure Finalise (S : in out State; Key : in Key_Type; Tag : out Tag_Type);
 
    -- These compile-time checks test requirements that cannot be expressed
    -- in the generic formal parameters. Currently compile-time checks are
    -- not supported in GNATprove so the related warnings are suppressed.
    pragma Warnings (GNATprove, Off, "Compile_Time_Error");
+   pragma Compile_Time_Error (key_bits /= tag_bits,
+                              "The tag has to be the same length as the key");
    pragma Compile_Time_Error (rate mod 64 /= 0,
                               "The rate is not a multiple of 64 bits");
    pragma Compile_Time_Error (System.Storage_Elements.Storage_Element'Size /= 8,

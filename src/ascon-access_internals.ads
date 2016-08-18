@@ -25,7 +25,7 @@ package Ascon.Access_Internals is
                       M : out Storage_Array)
      with Pre => (C'Length = M'Length);
 
-   procedure Finalise (S : in out State; Tag : out Tag_Type);
+   procedure Finalise (S : in out State; Key : in Key_Type; Tag : out Tag_Type);
 
 private
 
@@ -45,7 +45,7 @@ private
                       C : in Storage_Array;
                       M : out Storage_Array) renames Ascon.Decrypt;
 
-   procedure Finalise (S : in out State; Tag : out Tag_Type)
+   procedure Finalise (S : in out State; Key : in Key_Type; Tag : out Tag_Type)
                        renames Ascon.Finalise;
 
 end Ascon.Access_Internals;
