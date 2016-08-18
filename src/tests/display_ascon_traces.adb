@@ -25,7 +25,7 @@ procedure Display_Ascon_Traces is
    N : Ascon.Nonce_Type := (others => 0);
    A : Storage_Array(0..4) := (16#41#, 16#53#, 16#43#, 16#4f#, 16#4e#);
    M : Storage_Array(0..4) := (16#61#, 16#73#, 16#63#, 16#6f#, 16#6e#);
---     C : Storage_Array(0..Test_Message_Length-1);
+   C : Storage_Array(0..4);
 --     T : Ascon.Tag_Type;
 --
 --     M2 : Storage_Array(0..Test_Message_Length-1);
@@ -45,19 +45,19 @@ begin
    Put_Line("State after associated data processing:");
    Put_State(State_Trace);
    New_Line;
---
---     Encrypt(State_Trace, M, C, 16#02#);
---     Put_Line("State after message encryption:");
---     Put_State(State_Trace);
---     New_Line;
---
+
+   Encrypt(State_Trace, M, C);
+   Put_Line("State after message encryption:");
+   Put_State(State_Trace);
+   New_Line;
+
 --     Finalise(State_Trace, T, 16#08#);
 --     Put_Line("State after finalisation:");
 --     Put_State(State_Trace);
 --     New_Line;
 --
---     Put_Line("Ciphertext:");
---     Put_Storage_Array(C);
+   Put_Line("Ciphertext:");
+   Put_Storage_Array(C);
 --     Put_Line("Tag:");
 --     Put_Storage_Array(T);
 --     New_Line;

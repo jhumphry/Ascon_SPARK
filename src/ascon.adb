@@ -219,67 +219,66 @@ is
       S(4) := S(4) xor 1;
    end Absorb;
 
-   procedure Encrypt_Block (S : in out State;
-                            M : in Rate_Storage_Array;
-                            C : out Rate_Storage_Array)
-     with Inline is
+   procedure Absorb_M_Block (S : in out State;
+                             M : in Storage_Array;
+                             C : out Storage_Array)
+     with Inline, Pre => (M'Length = 8 and C'Length = 8 and
+                            M'Last < Storage_Offset'Last and
+                              C'Last < Storage_Offset'Last) is
       M_Index : Storage_Offset := M'First;
       C_Index : Storage_Offset := C'First;
    begin
---        S(15) := S(15) xor v;
---        F_l(S);
---        for I in 0..Rate_Words - 1 loop
---           pragma Loop_Invariant(M_Index = M'First + Storage_Offset(I) * Bytes);
---           pragma Loop_Invariant(C_Index = C'First + Storage_Offset(I) * Bytes);
---           S(I) := S(I) xor
---             Storage_Array_To_Word(M(M_Index .. M_Index + Bytes - 1));
---           C(C_Index .. C_Index + Bytes - 1) := Word_To_Storage_Array(S(I));
---           M_Index := M_Index + Bytes;
---           C_Index := C_Index + Bytes;
---        end loop;
---
---        pragma Assert (M_Index = M'Last + 1);
---        pragma Assert (C_Index = C'Last + 1);
-      null;
-   end Encrypt_Block;
+      for I in 0..Rate_Words - 1 loop
+         pragma Loop_Invariant(M_Index = M'First + Storage_Offset(I) * 8);
+         pragma Loop_Invariant(C_Index = C'First + Storage_Offset(I) * 8);
+
+         S(I) := S(I) xor Storage_To_Word(M(M_Index .. M_Index + 7));
+         C(C_Index .. C_Index + 7) := Word_To_Storage(S(I));
+         M_Index := M_Index + 8;
+         C_Index := C_Index + 8;
+      end loop;
+
+      pragma Assert (M_Index = M'Last + 1);
+      pragma Assert (C_Index = C'Last + 1);
+   end Absorb_M_Block;
 
    procedure Encrypt (S : in out State;
                       M : in Storage_Array;
                       C : out Storage_Array) is
---        Number_Full_Blocks : constant Storage_Offset := M'Length / Rate_Bytes_SO;
+      Number_Full_Blocks : constant Storage_Offset := M'Length / Rate_SE;
       M_Index : Storage_Offset := M'First;
       C_Index : Storage_Offset := C'First;
    begin
---        if M'Length > 0 then
---           for I in 1..Number_Full_Blocks loop
---              pragma Loop_Invariant(M_Index = M'First + (I-1) * Rate_Bytes_SO);
---              pragma Loop_Invariant(C_Index = C'First + (I-1) * Rate_Bytes_SO);
---              Encrypt_Block(S => S,
---                            M => M(M_Index..M_Index+Rate_Bytes_SO-1),
---                            C => C(C_Index..C_Index+Rate_Bytes_SO-1),
---                            v => v);
---              M_Index := M_Index + Rate_Bytes_SO;
---              C_Index := C_Index + Rate_Bytes_SO;
---           end loop;
---
---           declare
---              Last_M: constant Storage_Array := Pad_r(M(M_Index..M'Last));
---              Last_C : Storage_Array(1..Rate_Bytes_SO);
---           begin
---              Encrypt_Block(S => S,
---                            M => Last_M,
---                            C => Last_C,
---                            v => v);
---              C(C_Index..C'Last) := Last_C(1..(C'Last - C_Index)+1);
---           end;
---
---        end if;
-      null;
+      if M'Length > 0 then
+         for I in 1..Number_Full_Blocks loop
+            pragma Loop_Invariant(M_Index = M'First + (I-1) * Rate_SE);
+            pragma Loop_Invariant(C_Index = C'First + (I-1) * Rate_SE);
+            Absorb_M_Block(S => S,
+                           M => M(M_Index..M_Index+Rate_SE-1),
+                           C => C(C_Index..C_Index+Rate_SE-1)
+                          );
+            p_b(S);
+            M_Index := M_Index + Rate_SE;
+            C_Index := C_Index + Rate_SE;
+         end loop;
+
+         declare
+            Last_M: constant Storage_Array := Pad_r(M(M_Index..M'Last));
+            Last_C : Storage_Array(1..Rate_SE);
+         begin
+            Absorb_M_Block(S => S,
+                           M => Last_M,
+                           C => Last_C
+                          );
+            C(C_Index..C'Last) := Last_C(1..(C'Last - C_Index)+1);
+         end;
+
+      end if;
    end Encrypt;
 
---     pragma Annotate (GNATprove, False_Positive,
---                      """C"" might not be initialized",
---                      "The loop initialises C from C'First to C_Index-1 and the second block of code initialises C_Index to C'Last");
+     pragma Annotate (GNATprove, False_Positive,
+                      """C"" might not be initialized",
+                      "The loop initialises C from C'First to C_Index-1 and the second block of code initialises C_Index to C'Last");
 
    procedure Decrypt_Block (S : in out State;
                             C : in Rate_Storage_Array;
