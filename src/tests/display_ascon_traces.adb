@@ -36,6 +36,11 @@ begin
    Put_Line("ENCRYPTION");
    New_Line;
 
+   Put_Line("Plaintext:");
+   Put_Storage_Array(M);
+   New_Line;
+   New_Line;
+
    State_Trace := Initialise(K, N);
    Put_Line("State after initialisation (with key and nonce):");
    Put_State(State_Trace);
@@ -58,6 +63,7 @@ begin
 
    Put_Line("Ciphertext:");
    Put_Storage_Array(C);
+   New_Line;
    Put_Line("Tag:");
    Put_Storage_Array(T);
    New_Line;
