@@ -10,7 +10,7 @@ pragma Restrictions(No_Implementation_Attributes,
                     No_Implementation_Units,
                     No_Obsolescent_Features);
 
-with Ascon_Load_Store;
+with Ascon.Load_Store;
 with Ascon.Compare_Tags;
 
 package body Ascon
@@ -20,10 +20,10 @@ is
    use all type Interfaces.Unsigned_64;
 
    function Storage_To_Word (S : in Storage_Array) return Word
-     renames Ascon_Load_Store.Storage_Array_To_Unsigned_64;
+     renames Ascon.Load_Store.Storage_Array_To_Unsigned_64;
 
    function Word_To_Storage (W : in Word) return Storage_Array
-     renames Ascon_Load_Store.Unsigned_64_To_Storage_Array;
+     renames Ascon.Load_Store.Unsigned_64_To_Storage_Array;
 
    -- ***
    -- Constants and types used internally
@@ -246,7 +246,7 @@ is
 
    pragma Annotate (GNATprove, False_Positive,
                     """C"" might not be initialized",
-                    "The assertion on C_Index demonstrates that C is fully initialised");
+                    "The assertion on C_Index");
 
 
    procedure Encrypt (S : in out State;

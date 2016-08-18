@@ -1,4 +1,4 @@
--- Ascon_Load_Store
+-- Ascon.Load_Store
 
 -- Functions to load and store 64-bit words from Storage_Array in Big Endian
 -- format. Currently these are not optimised for the case where the machine
@@ -19,8 +19,8 @@ use System.Storage_Elements;
 with Interfaces;
 use Interfaces;
 
-package Ascon_Load_Store
-  with Pure, SPARK_Mode => On is
+private package Ascon.Load_Store
+  with SPARK_Mode => On is
 
    subtype E is Storage_Element;
 
@@ -48,4 +48,4 @@ package Ascon_Load_Store
                      E(W mod 16#100#)))
      with Inline, Post => (Unsigned_64_To_Storage_Array'Result'Length = 8);
 
-end Ascon_Load_Store;
+end Ascon.Load_Store;
