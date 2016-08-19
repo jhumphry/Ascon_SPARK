@@ -1,0 +1,32 @@
+-- Ascon
+
+-- an Ada / SPARK implementation of the Ascon Authenticated Encryption Algorithm
+-- created by Christoph Dobraunig, Maria Eichlseder, Florian Mendel and
+-- Martin Schläffer
+
+-- Copyright (c) 2016, James Humphry - see LICENSE file for details
+
+-- This project file will not rebuild the library
+
+library project Ascon_SPARK is
+
+   for Languages use ("Ada");
+
+   for Library_Name use "ascon_spark";
+   for Library_Kind use "static";
+
+   for Library_Interface use   ("Ascon",
+                                "Ascon.Compare_Tags",
+                                "Ascon_Definitions",
+                                "Ascon.Load_Store",
+                                "Ascon.Access_Internals",
+                                "Ascon.Utils",
+                                "Ascon128v11",
+                                "Ascon128av11");
+
+   for Source_Dirs use ("src/");
+   for Library_Dir use "lib/";
+
+   for Externally_Built use "true";
+
+end Ascon_SPARK;
