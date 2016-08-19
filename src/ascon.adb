@@ -1,6 +1,6 @@
 -- Ascon
 
--- an Ada implementation of the Ascon Authenticated Encryption Algorithm
+-- an Ada / SPARK implementation of the Ascon Authenticated Encryption Algorithm
 -- created by Christoph Dobraunig, Maria Eichlseder, Florian Mendel and
 -- Martin Schläffer
 
