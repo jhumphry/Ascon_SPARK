@@ -19,11 +19,13 @@ is
 
    use all type Interfaces.Unsigned_64;
 
+   package Ascon_Load_Store is new Ascon.Load_Store;
+
    function Storage_To_Word (S : in Storage_Array) return Word
-     renames Ascon.Load_Store.Storage_Array_To_Unsigned_64;
+     renames Ascon_Load_Store.Storage_Array_To_Unsigned_64;
 
    function Word_To_Storage (W : in Word) return Storage_Array
-     renames Ascon.Load_Store.Unsigned_64_To_Storage_Array;
+     renames Ascon_Load_Store.Unsigned_64_To_Storage_Array;
 
    -- ***
    -- Constants and types used internally
@@ -38,7 +40,7 @@ is
          16#0000000000000000005a#, 16#0000000000000000004b#);
 
    Rate_SE : constant Storage_Offset := Storage_Offset(rate/8);
-   Rate_Words : constant := rate/64;
+   Rate_Words : constant Integer := rate/64;
    Key_Words : constant := key_bits / 64;
    Tag_Words : constant := tag_bits / 64;
    Nonce_Words : constant := nonce_bits / 64;

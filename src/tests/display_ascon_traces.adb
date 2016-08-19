@@ -14,22 +14,24 @@ with Ascon.Access_Internals;
 with Ascon.Utils;
 
 procedure Display_Ascon_Traces is
-   use Ascon.Access_Internals;
 
-   package Ascon_Utils is new Ascon.Utils;
+   package Ascon_Package_Internals is new Ascon_Package.Access_Internals;
+   use Ascon_Package_Internals;
+
+   package Ascon_Utils is new Ascon_Package.Utils;
    use Ascon_Utils;
 
    State_Trace : State := Make_State;
 
-   K : Ascon.Key_Type := (others => 0);
-   N : Ascon.Nonce_Type := (others => 0);
+   K : Ascon_Package.Key_Type := (others => 0);
+   N : Ascon_Package.Nonce_Type := (others => 0);
    A : Storage_Array(0..4) := (16#41#, 16#53#, 16#43#, 16#4f#, 16#4e#);
    M : Storage_Array(0..4) := (16#61#, 16#73#, 16#63#, 16#6f#, 16#6e#);
    C : Storage_Array(0..4);
-   T : Ascon.Tag_Type;
+   T : Ascon_Package.Tag_Type;
 
    M2 : Storage_Array(0..4);
-   T2 : Ascon.Tag_Type;
+   T2 : Ascon_Package.Tag_Type;
 
 begin
 

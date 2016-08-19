@@ -19,7 +19,7 @@ use System.Storage_Elements;
 with Interfaces;
 use Interfaces;
 
-private package Ascon.Load_Store
+private generic package Ascon.Load_Store
   with SPARK_Mode => On is
 
    subtype E is Storage_Element;

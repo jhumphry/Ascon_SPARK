@@ -18,14 +18,13 @@ private with Interfaces;
 with Ascon_Definitions;
 use Ascon_Definitions;
 
+generic
+   a_rounds : Round_Count := 12;
+   b_rounds : Round_Count := 6;
+   rate : Rate_Bits := 64;
 package Ascon
 with SPARK_Mode => On
 is
-
-   -- These constants will become generic parameters
-   a_rounds : constant Round_Count := 12;
-   b_rounds : constant Round_Count := 6;
-   rate : constant Rate_Bits := 64;
 
    -- These constants are the same for all variants of Ascon
    key_bits : constant := 128;

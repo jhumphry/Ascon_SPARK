@@ -10,5 +10,5 @@ with System.Storage_Elements;
 with Ascon;
 
 generic
---     with package NORX_Package is new NORX(<>);
+     with package Ascon_Package is new Ascon(<>);
 procedure Display_Ascon_Traces;
