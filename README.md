@@ -58,6 +58,21 @@ the line `//#define PRINTSTATE` in `ascon.c` should be un-commented.
 works correctly when the lengths of the associated data and message vary. This
 is primarily to check for any bugs in the implementation of the padding.
 
+## Status of SPARK proof
+
+As the code is written in the SPARK 2014 subset of Ada 2012, it is possible to
+formally verify properties of the code and eliminate the possibility of
+run-time exceptions.
+
+The GPL SPARK prover `gnatprove` shipped with SPARK GPL 2016 from
+[AdaCore](http://libre.adacore.com/) is used for this project. It is not able
+to prove the complete initialisation of output arrays where they are written
+to one element at a time (common in this code) rather than as a single
+aggregate expression. It is able to prove the absence of all other potential
+sources of run-time exceptions, which amount to 97% of the checks, without
+manual intervention. It also proves that `AEADDec` will not return any
+decrypted data if the tag verification failed.
+
 ## Project files
 
 Three project files for use with `GPRBuild` are provided. `ascon_spark.gpr`
@@ -75,8 +90,8 @@ code.
 
 ## Using GNATprove for verification
 
-To verify the code, GNATprove can be invoked via the GPS IDE. Alternatively the
-command line can be used:
+To verify the code, GNATprove can be invoked via the GPS IDE. Alternatively
+the following command line can be used:
 
 - SPARK GPL 2016
 
