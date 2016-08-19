@@ -5,8 +5,6 @@
 
 -- Copyright (c) 2016, James Humphry - see LICENSE file for details
 
-with System.Storage_Elements;
-
 with Ascon;
 
 generic

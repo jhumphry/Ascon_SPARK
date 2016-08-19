@@ -11,7 +11,6 @@ pragma Restrictions(No_Implementation_Attributes,
                     No_Obsolescent_Features);
 
 with System.Storage_Elements;
-use type System.Storage_Elements.Storage_Offset;
 
 private with Interfaces;
 
