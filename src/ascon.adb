@@ -63,7 +63,7 @@ is
       T : State;
    begin
       -- x0 ^= x4;    x4 ^= x3;    x2 ^= x1;
-      S(0) := S(0) xor s(4);
+      S(0) := S(0) xor S(4);
       S(4) := S(4) xor S(3);
       S(2) := S(2) xor S(1);
 
@@ -250,7 +250,6 @@ is
                     """C"" might not be initialized",
                     "The assertion on C_Index");
 
-
    procedure Encrypt (S : in out State;
                       M : in Storage_Array;
                       C : out Storage_Array) is
@@ -318,7 +317,6 @@ is
    pragma Annotate (GNATprove, False_Positive,
                     """M"" might not be initialized",
                     "The assertion on the final value of M_Index shows that the whole of M is initialised");
-
 
    procedure Absorb_Last_C_Block (S : in out State;
                                   C : in Storage_Array;

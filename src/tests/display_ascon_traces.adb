@@ -23,10 +23,10 @@ procedure Display_Ascon_Traces is
 
    State_Trace : State := Make_State;
 
-   K : Ascon_Package.Key_Type := (others => 0);
-   N : Ascon_Package.Nonce_Type := (others => 0);
-   A : Storage_Array(0..4) := (16#41#, 16#53#, 16#43#, 16#4f#, 16#4e#);
-   M : Storage_Array(0..4) := (16#61#, 16#73#, 16#63#, 16#6f#, 16#6e#);
+   K : constant Ascon_Package.Key_Type := (others => 0);
+   N : constant Ascon_Package.Nonce_Type := (others => 0);
+   A : constant Storage_Array(0..4) := (16#41#, 16#53#, 16#43#, 16#4f#, 16#4e#);
+   M : constant Storage_Array(0..4) := (16#61#, 16#73#, 16#63#, 16#6f#, 16#6e#);
    C : Storage_Array(0..4);
    T : Ascon_Package.Tag_Type;
 
