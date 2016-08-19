@@ -188,8 +188,8 @@ is
    end Initialise;
 
    procedure Absorb_AD_Block (S : in out State;
-                           X : in Storage_Array)
-     with Inline, Pre => (X'Length = 8 and X'Last < Storage_Offset'Last) is
+                              X : in Storage_Array)
+     with Inline, Pre => (X'Length = Rate_SE and X'Last < Storage_Offset'Last) is
       X_Index : Storage_Offset := X'First;
    begin
       for I in 0..Rate_Words - 1 loop
@@ -224,7 +224,7 @@ is
    procedure Absorb_M_Block (S : in out State;
                              M : in Storage_Array;
                              C : out Storage_Array)
-     with Inline, Pre => (M'Length = 8 and C'Length = 8 and
+     with Inline, Pre => (M'Length = Rate_SE and C'Length = Rate_SE and
                             M'Last < Storage_Offset'Last and
                               C'Last < Storage_Offset'Last) is
       M_Index : Storage_Offset := M'First;
@@ -290,7 +290,7 @@ is
    procedure Absorb_C_Block (S : in out State;
                              C : in Storage_Array;
                              M : out Storage_Array)
-     with Inline, Pre => (M'Length = 8 and C'Length = 8 and
+     with Inline, Pre => (M'Length = Rate_SE and C'Length = Rate_SE and
                             M'Last < Storage_Offset'Last and
                               C'Last < Storage_Offset'Last) is
       C_i : Word;
@@ -322,7 +322,7 @@ is
                                   C : in Storage_Array;
                                   M : out Storage_Array)
      with Inline, Pre => (M'Length = C'Length and
-                            C'Length < rate/8 and
+                            C'Length < Rate_SE and
                               M'Last < Storage_Offset'Last and
                                 C'Last < Storage_Offset'Last) is
       Last_Block : Storage_Array(1..Rate_SE);
