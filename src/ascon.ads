@@ -43,8 +43,8 @@ is
    -- A Storage_Array subtype containing an authentication tag.
 
    Null_Storage_Array : constant Storage_Array(1..0) := (others => 0);
-   -- A null Storage_Array that can be passed to AEADEnc and AEADDec if one
-   -- of the header, message or trailer parameters is not required.
+   -- A null Storage_Array that can be passed to AEADEnc and AEADDec if one of
+   -- the associated data or message parameters is not required.
 
    -- High-level API for Ascon
 
@@ -61,7 +61,7 @@ is
    -- AEADEnc carries out an authenticated encryption
    -- K : key data
    -- N : nonce
-   -- A : optional (unencrypted) header
+   -- A : optional (unencrypted) associated data
    -- M : optional message to be encrypted
    -- C : encrypted version of M
    -- T : authentication tag for (A,M,Z)
@@ -81,7 +81,7 @@ is
    -- AEADEnc carries out an authenticated decryption
    -- K : key data
    -- N : nonce
-   -- A : optional (unencrypted) header
+   -- A : optional (unencrypted) associated data
    -- C : optional ciphertext to be decrypted
    -- T : authentication tag
    -- M : contains the decrypted C or zero if the input does not authenticate
