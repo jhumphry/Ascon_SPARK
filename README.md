@@ -76,7 +76,7 @@ decrypted data if the tag verification failed.
 ## Project files
 
 Three project files for use with `GPRBuild` are provided. `ascon_spark.gpr`
-builds the NORX code as a static library. It takes two optional parameters:
+builds the ASCON code as a static library. It takes two optional parameters:
 
 - `mode` can be set to `debug` (the default) or `optimise`/`optimize`. This
 sets appropriate compiler flags.
@@ -95,6 +95,6 @@ the following command line can be used:
 
 - SPARK GPL 2016
 
-    gnatprove -P spark_norx.gpr -U -j0 --level=1 --proof=progressive --warnings=continue
+    gnatprove -P ascon_spark.gpr -U -j0 --level=1 --proof=progressive --warnings=continue
 
 Add `--report=all` if you want to see the checks that are proved as well.
