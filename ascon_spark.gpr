@@ -4,7 +4,7 @@
 -- created by Christoph Dobraunig, Maria Eichlseder, Florian Mendel and
 -- Martin Schläffer
 
--- Copyright (c) 2016, James Humphry - see LICENSE file for details
+-- Copyright (c) 2016-2017, James Humphry - see LICENSE file for details
 
 library project Ascon_SPARK is
 
@@ -52,14 +52,18 @@ library project Ascon_SPARK is
                                               "-gnatf", "-gnato",
                                               "-gnatVa", "-gnateA",
                                               "-gnatwa.f", "-gnatwZ",
-                                              "-gnatyaAbCdfhiknprux");
+                                              "-gnatyaAbCdfhiknprux",
+                                              "-fPIC");
 
          when "optimize" | "optimise" =>
-            for Default_Switches ("ada") use ("-gnat2012", "-O2",
-                                              "-gnatn", "-funroll-loops");
+            for Default_Switches ("ada") use ("-gnat2012", "-O2", "-gnatp",
+                                              "-gnatn", "-funroll-loops",
+                                              "-fPIC");
             for Switches ("ascon-compare_tags.adb") use ("-gnat2012", "-O0",
-                                                         "-gnatn",
-                                                         "-funroll-loops");
+                                                        "-gnatp",
+                                                        "-gnatn",
+                                                        "-funroll-loops",
+                                                        "-fPIC");
 
       end case;
    end Compiler;

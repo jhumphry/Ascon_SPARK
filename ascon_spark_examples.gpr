@@ -4,7 +4,7 @@
 -- created by Christoph Dobraunig, Maria Eichlseder, Florian Mendel and
 -- Martin Schläffer
 
--- Copyright (c) 2016, James Humphry - see LICENSE file for details
+-- Copyright (c) 2016-2017, James Humphry - see LICENSE file for details
 
 with "ascon_spark";
 
@@ -32,11 +32,13 @@ project Ascon_SPARK_Examples is
                                               "-gnatf", "-gnato",
                                               "-gnatVa", "-gnateA",
                                               "-gnatwa.f", "-gnatwZ",
-                                              "-gnatyaAbCdfhiknprux");
+                                              "-gnatyaAbCdfhiknprux",
+                                              "-fPIE");
 
          when "optimize" | "optimise" =>
-            for Default_Switches ("ada") use ("-gnat2012", "-O2",
-                                              "-gnatn", "-funroll-loops");
+            for Default_Switches ("ada") use ("-gnat2012", "-O2", "-gnatp",
+                                              "-gnatn", "-funroll-loops",
+                                              "-fPIE");
 
       end case;
    end Compiler;
