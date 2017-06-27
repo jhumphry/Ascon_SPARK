@@ -6,7 +6,7 @@
 -- conversion. Some compilers may have a peephole optimisation for these
 -- routines.
 
--- Copyright (c) 2016, James Humphry - see LICENSE file for details
+-- Copyright (c) 2016-2017, James Humphry - see LICENSE file for details
 
 -- Note that all the Unsigned_xx types count as Implementation_Identifiers
 pragma Restrictions(No_Implementation_Attributes,
@@ -24,6 +24,24 @@ private generic package Ascon.Load_Store
 
    subtype E is Storage_Element;
 
+   function Check_Storage_Array_Length_8 (X : in Storage_Array) return Boolean
+   is
+      (
+       if X'Last < X'First then
+            False
+
+         elsif X'First < 0 then
+           (
+                (Long_Long_Integer (X'Last) < Long_Long_Integer'Last +
+                       Long_Long_Integer (X'First))
+            and then
+            X'Last - X'First = 7)
+
+         else
+          X'Last - X'First = 7
+      )
+   with Ghost;
+
    function Storage_Array_To_Unsigned_64 (S : in Storage_Array)
                                           return Unsigned_64 is
      (Shift_Left(Unsigned_64(S(S'First)), 56) or
@@ -34,7 +52,7 @@ private generic package Ascon.Load_Store
           Shift_Left(Unsigned_64(S(S'First + 5)), 16) or
           Shift_Left(Unsigned_64(S(S'First + 6)), 8) or
           Unsigned_64(S(S'First + 7)))
-   with Inline, Pre => (S'Length = 8);
+   with Inline, Pre => (Check_Storage_Array_Length_8(S));
 
    function Unsigned_64_To_Storage_Array (W : in Unsigned_64)
                                           return Storage_Array is

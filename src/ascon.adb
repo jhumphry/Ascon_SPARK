@@ -4,7 +4,7 @@
 -- created by Christoph Dobraunig, Maria Eichlseder, Florian Mendel and
 -- Martin Schläffer
 
--- Copyright (c) 2016, James Humphry - see LICENSE file for details
+-- Copyright (c) 2016-2017, James Humphry - see LICENSE file for details
 
 pragma Restrictions(No_Implementation_Attributes,
                     No_Implementation_Units,
@@ -135,9 +135,55 @@ is
    -- Internal use routines
    -- ***
 
+   function Valid_Block (First, Last : in Storage_Offset) return Boolean is
+     (
+      Last < Storage_Offset'Last - Rate_SE and
+        (
+           -- now check X'Length = Rate_SE ... but in a way that doesn't overflow
+         -- given Storage_Offset can hold a range greater than Long_Long_Integer
+         if Last < First then
+            False
+
+         elsif First < 0 then
+           (
+                (Long_Long_Integer (Last) < Long_Long_Integer'Last +
+                       Long_Long_Integer (First))
+            and then
+            Last - First = Rate_SE - 1)
+
+         else
+            Last - First = Rate_SE - 1
+        )
+     )
+   with Ghost;
+
+   function Valid_Paddable (X : in Storage_Array) return Boolean is
+     (
+      -- First check that the array can be padded without exceeding the range
+      -- of a Storage_Array
+      X'Last < Storage_Offset'Last - Rate_SE and
+        (
+         -- now check X'Length < Rate_SE else padding is not needed... but in
+         -- a way that doesn't overflow given Storage_Offset can hold a range
+         -- greater than Long_Long_Integer
+         if X'Last < X'First then
+            True
+
+         elsif X'First < 0 then
+           (
+                (Long_Long_Integer (X'Last) < Long_Long_Integer'Last +
+                       Long_Long_Integer (X'First))
+            and then
+            X'Last - X'First < Rate_SE - 1)
+
+         else
+            X'Last - X'First < Rate_SE - 1
+        )
+     )
+   with Ghost;
+
    function Pad_r (X : in Storage_Array) return Rate_Storage_Array
-     with Inline, Pre=> (X'Length < rate / 8 and
-                           X'Last < Storage_Offset'Last - Rate_SE) is
+     with Inline, Pre=> (Valid_Paddable(X)) is
       Zero_Pad_Length : constant Storage_Offset
         := Rate_SE - 1 - Storage_Offset(X'Length);
       Padding : constant Storage_Array(1 .. Zero_Pad_Length) := (others => 0);
@@ -191,7 +237,7 @@ is
 
    procedure Absorb_AD_Block (S : in out State;
                               X : in Storage_Array)
-     with Inline, Pre => (X'Length = Rate_SE and X'Last < Storage_Offset'Last) is
+     with Inline, Pre => (Valid_Block(X'First, X'Last)) is
       X_Index : Storage_Offset := X'First;
    begin
       for I in 0..Rate_Words - 1 loop
@@ -226,9 +272,8 @@ is
    procedure Absorb_M_Block (S : in out State;
                              M : in Storage_Array;
                              C : out Storage_Array)
-     with Inline, Pre => (M'Length = Rate_SE and C'Length = Rate_SE and
-                            M'Last < Storage_Offset'Last and
-                              C'Last < Storage_Offset'Last) is
+     with Inline, Pre => (Valid_Block(M'First, M'Last) and
+                              Valid_Block(C'First, C'Last)) is
       M_Index : Storage_Offset := M'First;
       C_Index : Storage_Offset := C'First;
    begin
@@ -291,9 +336,8 @@ is
    procedure Absorb_C_Block (S : in out State;
                              C : in Storage_Array;
                              M : out Storage_Array)
-     with Inline, Pre => (M'Length = Rate_SE and C'Length = Rate_SE and
-                            M'Last < Storage_Offset'Last and
-                              C'Last < Storage_Offset'Last) is
+     with Inline, Pre => ( Valid_Block(M'First, M'Last) and
+                              Valid_Block(C'First, C'Last)) is
       C_i : Word;
       M_Index : Storage_Offset := M'First;
       C_Index : Storage_Offset := C'First;
@@ -318,13 +362,36 @@ is
                     """M"" might not be initialized",
                     "The assertion on the final value of M_Index shows that the whole of M is initialised");
 
+   function Valid_Last_C_Block (First, Last : in Storage_Offset)
+                                return Boolean is
+     (
+      Last < Storage_Offset'Last - 1 and
+        (
+           -- now check X'Length = Rate_SE ... but in a way that doesn't overflow
+         -- given Storage_Offset can hold a range greater than Long_Long_Integer
+         if Last < First then
+            True
+
+         elsif First < 0 then
+           (
+                (Long_Long_Integer (Last) < Long_Long_Integer'Last +
+                       Long_Long_Integer (First))
+            and then
+            Last - First < Rate_SE - 1)
+
+         else
+            Last - First < Rate_SE - 1
+        )
+     )
+   with Ghost;
+
    procedure Absorb_Last_C_Block (S : in out State;
                                   C : in Storage_Array;
                                   M : out Storage_Array)
-     with Inline, Pre => (M'Length = C'Length and
-                            C'Length < Rate_SE and
-                              M'Last < Storage_Offset'Last and
-                                C'Last < Storage_Offset'Last) is
+     with Inline, Pre => ((Valid_Last_C_Block(C'First, C'Last) and
+                            Valid_Last_C_Block(M'First, M'Last))
+                          and then M'Length = C'Length
+                         ) is
       Last_Block : Storage_Array(1..Rate_SE);
       Index : Storage_Offset := Last_Block'First;
       C_Index : Storage_Offset := C'First;
