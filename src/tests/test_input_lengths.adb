@@ -4,18 +4,15 @@
 -- of different lengths correctly encrypt and decrypt. This is largely aimed
 -- at checking the implementation of padding.
 
--- Copyright (c) 2016, James Humphry - see LICENSE file for details
+-- Copyright (c) 2016-2018, James Humphry - see LICENSE file for details
 
 with Ada.Text_IO;
 use Ada.Text_IO;
 
 with System.Storage_Elements;
-use System.Storage_Elements;
 
 with Interfaces;
 use Interfaces;
-
-with Ascon.Utils;
 
 procedure Test_Input_Lengths is
 
@@ -24,9 +21,6 @@ procedure Test_Input_Lengths is
    package Storage_Offset_Text_IO is
      new Ada.Text_IO.Integer_IO(Num => Storage_Offset);
    use Storage_Offset_Text_IO;
-
-   package Ascon_Utils is new Ascon_Package.Utils;
-   use Ascon_Utils;
 
    function Generate (G : in out Unsigned_64) return Storage_Element is
       -- xorshift64 generator from: An experimental exploration of Marsaglia's
