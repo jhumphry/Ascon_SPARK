@@ -38,6 +38,9 @@ begin
    Put_Line("ENCRYPTION");
    New_Line;
 
+   Put_Line("Associated Data:");
+   Put_Storage_Array(A);
+   New_Line;
    Put_Line("Plaintext:");
    Put_Storage_Array(M);
    New_Line;
