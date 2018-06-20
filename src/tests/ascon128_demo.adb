@@ -1,6 +1,6 @@
 -- Ascon_Demo
 
--- Copyright (c) 2016, James Humphry - see LICENSE file for details
+-- Copyright (c) 2016-2018, James Humphry - see LICENSE file for details
 
 with Ada.Text_IO;
 use Ada.Text_IO;
@@ -9,13 +9,13 @@ use System.Storage_Elements;
 
 with Ascon.Utils;
 
-with Ascon128v11;
-use Ascon128v11;
+with Ascon128v12;
+use Ascon128v12;
 
 procedure Ascon128_Demo is
 
-   package Ascon128v11_Utils is new Ascon128v11.Utils;
-   use Ascon128v11_Utils;
+   package Ascon128v12_Utils is new Ascon128v12.Utils;
+   use Ascon128v12_Utils;
 
    K : Key_Type;
    N : Nonce_Type;
@@ -24,7 +24,7 @@ procedure Ascon128_Demo is
    Valid : Boolean;
 
 begin
-   Put_Line("Ascon128v11 Example");
+   Put_Line("Ascon-128 v1.2 Example");
    Put_Line("Encrypting and decrypting a message using the high-level API");
    New_Line;
 

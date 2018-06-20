@@ -52,11 +52,17 @@ is
    -- of the Ascon specification
    -- ***
 
-   procedure p_C (S : in out State; Round : in Round_Count)
+   procedure p_C_a (S : in out State; Round : in Round_Count)
      with Inline is
    begin
       S(2) := S(2) xor Round_Constants(Round);
-   end p_C;
+   end p_C_a;
+
+   procedure p_C_b (S : in out State; Round : in Round_Count)
+     with Inline is
+   begin
+      S(2) := S(2) xor Round_Constants(Round + b_round_constants_offset);
+   end p_C_b;
 
    procedure p_S (S : in out State)
      with Inline is
@@ -115,7 +121,7 @@ is
      with Inline is
    begin
       for I in 1..a_rounds loop
-         p_C(S, I);
+         p_C_a(S, I);
          p_S(S);
          p_L(S);
       end loop;
@@ -125,7 +131,7 @@ is
      with Inline is
    begin
       for I in 1..b_rounds loop
-         p_C(S, I);
+         p_C_b(S, I);
          p_S(S);
          p_L(S);
       end loop;

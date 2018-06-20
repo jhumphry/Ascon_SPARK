@@ -18,5 +18,6 @@ with Pure, SPARK_Mode => On is
      with Static_Predicate => Rate_Bits in 64 | 128;
 
    subtype Round_Count is Integer range 1..12;
+   subtype Round_Offset is Integer range 0..11;
 
 end Ascon_Definitions;

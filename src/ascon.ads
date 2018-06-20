@@ -20,6 +20,7 @@ use Ascon_Definitions;
 generic
    a_rounds : Round_Count := 12;
    b_rounds : Round_Count := 6;
+   b_round_constants_offset : Round_Offset := 6;
    rate : Rate_Bits := 64;
 package Ascon
 with SPARK_Mode => On

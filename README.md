@@ -7,10 +7,10 @@ Authenticated Encryption with Additional Data Algorithm, a finalist in the
 [CAESAR](http://competitions.cr.yp.to/caesar.html) competition. Ascon was designed by Christoph
 Dobraunig, Maria Eichlseder, Florian Mendel and Martin Schläffer.
 
-This project implements both of the recommended Ascon variants in v1.1 of the specification. A
-single generic package can be instantiated with the relevant parameters. There are a few additional
-requirements on the target system which should not be a problem - for example it must support
-operations on the `Interfaces.Unsigned_64` type.
+This project implements both of the recommended Ascon variants in v1.1 and v1.2 of the
+specification. A single generic package can be instantiated with the relevant parameters. There are
+a few additional requirements on the target system which should not be a problem - for example it
+must support operations on the `Interfaces.Unsigned_64` type.
 
 This project is free software (using the ISC permissive licence) and is provided with no
 warranties, as set out in the file `LICENSE`.
