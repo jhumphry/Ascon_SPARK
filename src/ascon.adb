@@ -59,7 +59,7 @@ is
    end p_C_a;
 
    procedure p_C_b (S : in out State; Round : in Round_Count)
-     with Inline is
+     with Pre => ((Round + b_round_constants_offset) <= 12), Inline is
    begin
       S(2) := S(2) xor Round_Constants(Round + b_round_constants_offset);
    end p_C_b;

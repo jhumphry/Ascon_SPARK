@@ -180,6 +180,9 @@ private
    pragma Compile_Time_Error (System.Storage_Elements.Storage_Element'Size /= 8,
                               "This implementation of Ascon cannot work " &
                                 "with Storage_Element'Size /= 8");
+   pragma Compile_Time_Error (b_rounds + b_round_constants_offset > 12,
+                              "Ascon requires b_rounds +" &
+                                " b_round_constants_offset to be <= 12");
    pragma Warnings (GNATprove, On, "Compile_Time_Error");
 
 end Ascon;
