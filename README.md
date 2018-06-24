@@ -26,7 +26,9 @@ valid. If either of the  `A` or `M` parameters are not used, the constant `Null_
 be passed to the routines.
 
 Packages `Ascon128v11` and `Ascon128av11` are instantiations of the generic package with the
-parameters recommended in version 1.1 of the specification.
+parameters recommended in version 1.1 of the specification. Packages `Ascon128v12` and
+`Ascon128av12` are instantiations of the generic package with the parameters recommended in version
+1.2 of the specification.
 
 `Ascon_Definitions` defines some constrained types used in the generic formal parameters and
 `Ascon.Load_Store` contains functions that convert between standard word sizes and `Storage_Array`
@@ -98,4 +100,5 @@ line can be used:
 Add `--report=all` if you want to see the checks that are proved as well.
 
 For SPARK Discovery GPL 2017 the built-in SMT solver, Alt-Ergo, may not be able to prove all of the
-VC. Add the alternative Z3 and/or CVC4 provers as explained in the SPARK user guide.
+VC. Add the alternative Z3 and/or CVC4 provers as explained in the SPARK user guide. The 2016 and
+2018 GPL releases of SPARK contain these provers out-of-the-box.
