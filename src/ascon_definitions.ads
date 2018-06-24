@@ -4,7 +4,7 @@
 -- As some uses of these types are in generic parameters, it is not possible
 -- to hide them.
 
--- Copyright (c) 2016, James Humphry - see LICENSE file for details
+-- Copyright (c) 2016-2018, James Humphry - see LICENSE file for details
 
 pragma Restrictions(No_Implementation_Attributes,
                     No_Implementation_Identifiers,

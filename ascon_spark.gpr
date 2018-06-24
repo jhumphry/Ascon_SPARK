@@ -4,7 +4,7 @@
 -- created by Christoph Dobraunig, Maria Eichlseder, Florian Mendel and
 -- Martin Schläffer
 
--- Copyright (c) 2016-2017, James Humphry - see LICENSE file for details
+-- Copyright (c) 2016-2018, James Humphry - see LICENSE file for details
 
 library project Ascon_SPARK is
 
