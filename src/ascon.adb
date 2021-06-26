@@ -297,9 +297,9 @@ is
       pragma Assert (C_Index = C'Last + 1);
    end Absorb_M_Block;
 
-   pragma Annotate (GNATprove, False_Positive,
-                    """C"" might not be initialized",
-                    "The assertion on C_Index");
+   --  pragma Annotate (GNATprove, False_Positive,
+   --                   """C"" might not be initialized",
+   --                   "The assertion on C_Index");
 
    procedure Encrypt (S : in out State;
                       M : in Storage_Array;
@@ -335,9 +335,9 @@ is
       end if;
    end Encrypt;
 
-   pragma Annotate (GNATprove, False_Positive,
-                    """C"" might not be initialized",
-                    "The loop initialises C from C'First to C_Index-1 and the second block of code initialises C_Index to C'Last");
+   --  pragma Annotate (GNATprove, False_Positive,
+   --                   """C"" might not be initialized",
+   --                   "The loop initialises C from C'First to C_Index-1 and the second block of code initialises C_Index to C'Last");
 
    procedure Absorb_C_Block (S : in out State;
                              C : in Storage_Array;
@@ -364,9 +364,9 @@ is
       pragma Assert (C_Index = C'Last + 1);
    end Absorb_C_Block;
 
-   pragma Annotate (GNATprove, False_Positive,
-                    """M"" might not be initialized",
-                    "The assertion on the final value of M_Index shows that the whole of M is initialised");
+   --  pragma Annotate (GNATprove, False_Positive,
+   --                   """M"" might not be initialized",
+   --                   "The assertion on the final value of M_Index shows that the whole of M is initialised");
 
    function Valid_Last_C_Block (First, Last : in Storage_Offset)
                                 return Boolean is
@@ -432,13 +432,13 @@ is
 
    end Absorb_Last_C_Block;
 
-   pragma Annotate (GNATprove, False_Positive,
-                    """M"" might not be initialized",
-                    "The loop over M'Range demonstrates that M is fully initialised");
-
-   pragma Annotate (GNATprove, False_Positive,
-                    """Last_Block"" might not be initialized",
-                    "The assertion demonstrates that Last_Block is fully initialised");
+   --  pragma Annotate (GNATprove, False_Positive,
+   --                   """M"" might not be initialized",
+   --                   "The loop over M'Range demonstrates that M is fully initialised");
+   --
+   --  pragma Annotate (GNATprove, False_Positive,
+   --                   """Last_Block"" might not be initialized",
+   --                   "The assertion demonstrates that Last_Block is fully initialised");
 
    procedure Decrypt (S : in out State;
                       C : in Storage_Array;
@@ -466,9 +466,9 @@ is
       end if;
    end Decrypt;
 
-   pragma Annotate (GNATprove, False_Positive,
-                    """M"" might not be initialized",
-                    "The loop initialises M from M'First to M_Index-1 and the call to Decrypt_Last_Block initialises M_Index to M'Last");
+   --  pragma Annotate (GNATprove, False_Positive,
+   --                   """M"" might not be initialized",
+   --                   "The loop initialises M from M'First to M_Index-1 and the call to Decrypt_Last_Block initialises M_Index to M'Last");
 
    procedure Finalise (S : in out State; Key : in Key_Type; Tag : out Tag_Type) is
       Key_Ptr : Storage_Offset := Key'First;
@@ -500,9 +500,9 @@ is
 
    end Finalise;
 
-   pragma Annotate (GNATprove, False_Positive,
-                    """Tag"" might not be initialized",
-                    "Initialisation and assertion demonstrate that Tag_Index is incremented over every element of Tag");
+   --  pragma Annotate (GNATprove, False_Positive,
+   --                   """Tag"" might not be initialized",
+   --                   "Initialisation and assertion demonstrate that Tag_Index is incremented over every element of Tag");
 
    -- ***
    -- High-level API as described in Algorithm 1 of the Ascon specification
