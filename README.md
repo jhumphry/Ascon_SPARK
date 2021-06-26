@@ -58,13 +58,11 @@ implementation of the padding.
 As the code is written in the SPARK 2014 subset of Ada 2012, it is possible to formally verify
 properties of the code and eliminate the possibility of run-time exceptions.
 
-The GPL SPARK prover `gnatprove` shipped with SPARK GPL 2016, SPARK Discovery GPL 2017 or GNAT
-Community 2018 from [AdaCore](https://www.adacore.com/community) is used for this project. It is
-not able to prove the complete initialisation of output arrays where they are written to one
-element at a time (common in this code) rather than as a single aggregate expression. It is able to
-prove the absence of all other potential sources of run-time exceptions, which amount to 97% of the
-checks, without manual intervention. It also proves that `AEADDec` will not return any decrypted
-data if the tag verification failed.
+The GPL SPARK prover `gnatprove` shipped with GNAT Community 2021 from [AdaCore](https://www.adacore.com/community)
+is used for this project. It is also able to prove the absence of all potential sources of run-time
+exceptions without manual intervention. This includes checking for the non-initialization of arrays,
+which was not possible before GNAT Community 2020. It also proves that `AEADDec` will not return any
+decrypted data if the tag verification failed.
 
 ## Project files
 
@@ -82,23 +80,12 @@ the library. `ascon_spark_examples.gpr` builds the example code.
 
 ## Using GNATprove for verification
 
-To verify the code, GNATprove can be invoked via the GPS IDE. Alternatively the following command
+To verify the code, GNATprove can be invoked via the GnatStudio IDE. Alternatively the following command
 line can be used:
 
-- SPARK GPL 2016
-
-    gnatprove -P ascon_spark.gpr -U -j0 --level=1 --proof=progressive --warnings=continue
-
-- SPARK Discovery GPL 2017
-
-    gnatprove -P ascon_spark.gpr -j0 -Xload_store=explicit -Xmode=debug --level=2
-
-- SPARK from GNAT Community 2018
+- SPARK from GNAT Community 2021
 
     gnatprove -P ascon_spark.gpr -j0 -Xload_store=explicit -Xmode=debug --level=0
 
 Add `--report=all` if you want to see the checks that are proved as well.
 
-For SPARK Discovery GPL 2017 the built-in SMT solver, Alt-Ergo, may not be able to prove all of the
-VC. Add the alternative Z3 and/or CVC4 provers as explained in the SPARK user guide. The 2016 and
-2018 GPL releases of SPARK contain these provers out-of-the-box.
