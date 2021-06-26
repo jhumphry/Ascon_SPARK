@@ -71,9 +71,9 @@ library project Ascon_SPARK is
    end Compiler;
 
    package Prove is
-      for Switches use ("-j0", "--timeout=3",
-                        "--proof=progressive",
-                        "--warnings=continue");
+      for Proof_Switches("ada") use ("-j0", "--timeout=3",
+                                     "--proof=progressive",
+                                     "--warnings=continue");
    end Prove;
 
 end Ascon_SPARK;
