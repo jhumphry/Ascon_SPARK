@@ -278,15 +278,18 @@ is
    procedure Absorb_M_Block (S : in out State;
                              M : in Storage_Array;
                              C : out Storage_Array)
-     with Inline, Pre => (Valid_Block(M'First, M'Last) and
-                              Valid_Block(C'First, C'Last)) is
+     with Inline,
+     Relaxed_Initialization => C,
+     Pre => (Valid_Block(M'First, M'Last) and
+               Valid_Block(C'First, C'Last)),
+     Post => C'Initialized is
       M_Index : Storage_Offset := M'First;
       C_Index : Storage_Offset := C'First;
    begin
       for I in 0..Rate_Words - 1 loop
          pragma Loop_Invariant(M_Index = M'First + Storage_Offset(I) * 8);
          pragma Loop_Invariant(C_Index = C'First + Storage_Offset(I) * 8);
-
+         pragma Loop_Invariant(C_Index = C'First or else C(C'First..C_Index-1)'Initialized);
          S(I) := S(I) xor Storage_To_Word(M(M_Index .. M_Index + 7));
          C(C_Index .. C_Index + 7) := Word_To_Storage(S(I));
          M_Index := M_Index + 8;
@@ -312,6 +315,8 @@ is
          for I in 1..Number_Full_Blocks loop
             pragma Loop_Invariant(M_Index = M'First + (I-1) * Rate_SE);
             pragma Loop_Invariant(C_Index = C'First + (I-1) * Rate_SE);
+            pragma Loop_Invariant(C_Index >= C'First and C_Index <= C'Last);
+            pragma Loop_Invariant(C_Index = C'First or else C(C'First..C_Index-1)'Initialized);
             Absorb_M_Block(S => S,
                            M => M(M_Index..M_Index+Rate_SE-1),
                            C => C(C_Index..C_Index+Rate_SE-1)
@@ -320,6 +325,8 @@ is
             M_Index := M_Index + Rate_SE;
             C_Index := C_Index + Rate_SE;
          end loop;
+
+         pragma Assert (Number_Full_Blocks = 0 or else C(C'First..C_Index-1)'Initialized);
 
          declare
             Last_M: constant Storage_Array := Pad_r(M(M_Index..M'Last));
@@ -330,6 +337,7 @@ is
                            C => Last_C
                           );
             C(C_Index..C'Last) := Last_C(1..(C'Last - C_Index)+1);
+            pragma Assert (C(C_Index..C'Last)'Initialized);
          end;
 
       end if;
@@ -342,8 +350,11 @@ is
    procedure Absorb_C_Block (S : in out State;
                              C : in Storage_Array;
                              M : out Storage_Array)
-     with Inline, Pre => ( Valid_Block(M'First, M'Last) and
-                              Valid_Block(C'First, C'Last)) is
+     with Inline,
+     Relaxed_Initialization => M,
+     Pre => ( Valid_Block(M'First, M'Last) and
+                Valid_Block(C'First, C'Last)),
+     Post => M'Initialized is
       C_i : Word;
       M_Index : Storage_Offset := M'First;
       C_Index : Storage_Offset := C'First;
@@ -351,6 +362,7 @@ is
       for I in 0..Rate_Words - 1 loop
          pragma Loop_Invariant(M_Index = M'First + Storage_Offset(I) * 8);
          pragma Loop_Invariant(C_Index = C'First + Storage_Offset(I) * 8);
+         pragma Loop_Invariant(M_Index = M'First or else M(M'First..M_Index-1)'Initialized);
 
          C_i := Storage_To_Word(C(C_Index .. C_Index + 7));
          M(M_Index .. M_Index + 7) := Word_To_Storage(S(I) xor C_i);
@@ -394,17 +406,21 @@ is
    procedure Absorb_Last_C_Block (S : in out State;
                                   C : in Storage_Array;
                                   M : out Storage_Array)
-     with Inline, Pre => ((Valid_Last_C_Block(C'First, C'Last) and
-                            Valid_Last_C_Block(M'First, M'Last))
-                          and then M'Length = C'Length
-                         ) is
-      Last_Block : Storage_Array(1..Rate_SE);
+     with Inline,
+     Relaxed_Initialization => M,
+     Pre => ((Valid_Last_C_Block(C'First, C'Last) and
+               Valid_Last_C_Block(M'First, M'Last))
+             and then M'Length = C'Length
+            ),
+     Post => M'Initialized is
+      Last_Block : Storage_Array(1..Rate_SE) with Relaxed_Initialization;
       Index : Storage_Offset := Last_Block'First;
       C_Index : Storage_Offset := C'First;
    begin
 
       for I in 0..Rate_Words-1 loop
          pragma Loop_Invariant (Index = Last_Block'First + Storage_Offset(I) * 8);
+         pragma Loop_Invariant (Last_Block(1..Index-1)'Initialized);
          Last_Block(Index .. Index + 7) := Word_To_Storage(S(I));
          Index := Index + 8;
       end loop;
@@ -415,6 +431,7 @@ is
       for I in M'Range loop
          pragma Loop_Invariant(C_Index = C'First + (I - M'First));
          pragma Loop_Invariant(Index = Last_Block'First + (I - M'First));
+         pragma Loop_Invariant(I = M'First or else M(M'First..I-1)'Initialized);
          M(I) := Last_Block(Index) xor C(C_Index);
          Index := Index + 1;
          C_Index := C_Index + 1;
@@ -451,6 +468,7 @@ is
          for I in 1..Number_Full_Blocks loop
             pragma Loop_Invariant(M_Index = M'First + (I-1) * Rate_SE);
             pragma Loop_Invariant(C_Index = C'First + (I-1) * Rate_SE);
+            pragma Loop_Invariant(M_Index = M'First or else M(M'First..M_Index-1)'Initialized);
             Absorb_C_Block(S => S,
                            C => C(C_Index..C_Index+Rate_SE-1),
                            M => M(M_Index..M_Index+Rate_SE-1));
@@ -462,6 +480,8 @@ is
          Absorb_Last_C_Block(S => S,
                              C => C(C_Index..C'Last),
                              M => M(M_Index..M'Last));
+
+         pragma Assert(M(M_Index..M'Last)'Initialized);
 
       end if;
    end Decrypt;
@@ -485,15 +505,18 @@ is
 
       for I in 1..Tag_Words loop
          pragma Loop_Invariant (Tag_Ptr = Tag'First + Storage_Offset(I-1)*8);
+         pragma Loop_Invariant (Tag(Tag'First..Tag_Ptr-1)'Initialized);
          Tag(Tag_Ptr .. Tag_Ptr+7) := Word_To_Storage(S(4-Tag_Words+I));
          Tag_Ptr := Tag_Ptr + 8;
       end loop;
 
       pragma Assert (Tag_Ptr = Tag'Last + 1);
+      pragma Assert (Tag'Initialized);
 
       Key_Ptr := Key'First;
       for I in Tag'Range loop
          pragma Loop_Invariant (Key_Ptr = Key'First + I-Tag'First);
+         pragma Loop_Invariant (I = Tag'First or else Tag(Tag'First.. I-1)'Initialized);
          Tag(I) := Tag(I) xor Key(Key_Ptr);
          Key_Ptr := Key_Ptr + 1;
       end loop;
