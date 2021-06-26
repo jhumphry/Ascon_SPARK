@@ -60,7 +60,6 @@ is
                       Valid_Storage_Array_Parameter(M) and
                          Valid_Storage_Array_Parameter(C'First, C'Last))
                       and then C'Length = M'Length
-
                     );
    -- AEADEnc carries out an authenticated encryption
    -- K : key data
@@ -152,22 +151,27 @@ private
    procedure Encrypt (S : in out State;
                       M : in Storage_Array;
                       C : out Storage_Array)
-     with Pre => (
+     with Relaxed_Initialization => C,
+       Pre => (
                   (Valid_Storage_Array_Parameter(M) and
                     Valid_Storage_Array_Parameter(C'First, C'Last))
                   and then C'Length = M'Length
-                 );
+              ),
+     Post => C'Initialized;
 
    procedure Decrypt (S : in out State;
                       C : in Storage_Array;
                       M : out Storage_Array)
-     with Pre => (
+     with Relaxed_Initialization => M,
+       Pre => (
                     (Valid_Storage_Array_Parameter(C) and
                     Valid_Storage_Array_Parameter(M'First, M'Last))
                   and then C'Length = M'Length
-                 );
+              ),
+     Post => M'Initialized;
 
-   procedure Finalise (S : in out State; Key : in Key_Type; Tag : out Tag_Type);
+   procedure Finalise (S : in out State; Key : in Key_Type; Tag : out Tag_Type)
+   with Relaxed_Initialization => Tag, Post => Tag'Initialized;
 
    -- These compile-time checks test requirements that cannot be expressed
    -- in the generic formal parameters. Currently compile-time checks are
