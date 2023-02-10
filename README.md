@@ -2,10 +2,11 @@
 
 ## Introduction
 
-This is an Ada 2012 / SPARK 2014 project that implements the [Ascon](http://ascon.iaik.tugraz.at)
-Authenticated Encryption with Additional Data Algorithm, a finalist in the
-[CAESAR](http://competitions.cr.yp.to/caesar.html) competition. Ascon was designed by Christoph
-Dobraunig, Maria Eichlseder, Florian Mendel and Martin Schläffer.
+This is an Ada 2012 / SPARK 2014 project that implements the [Ascon](http://ascon.iaik.tugraz.at) 
+Authenticated Encryption with Additional Data Algorithm, the [NIST Lightweight 
+Cryptography](https://csrc.nist.gov/projects/lightweight-cryptography) standard. It was also 
+selected as a finalist in the [CAESAR](http://competitions.cr.yp.to/caesar.html) competition. Ascon 
+was designed by Christoph Dobraunig, Maria Eichlseder, Florian Mendel and Martin Schläffer.
 
 This project implements both of the recommended Ascon variants in v1.1 and v1.2 of the
 specification. A single generic package can be instantiated with the relevant parameters. There are
