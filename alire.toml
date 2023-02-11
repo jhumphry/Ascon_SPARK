@@ -1,0 +1,12 @@
+name = "ascon_spark"
+description = "An implementation of the Ascon lightweight encryption algorithm"
+version = "0.0.0"
+website = "https://github.com/jhumphry/Ascon_SPARK"
+licenses = "ISC"
+tags = ["ascon", "security", "cryptography"]
+
+authors = ["James Humphry"]
+maintainers = ["James Humphry <alire@binecho.co.uk>"]
+maintainers-logins = ["jhumphry"]
+
+project-files = ["ascon_spark.gpr"]
