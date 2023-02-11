@@ -1,0 +1,102 @@
+-- Ascon
+
+-- an Ada / SPARK implementation of the Ascon Authenticated Encryption Algorithm
+-- created by Christoph Dobraunig, Maria Eichlseder, Florian Mendel and
+-- Martin Schläffer
+
+-- Copyright (c) 2016-2023, James Humphry - see LICENSE file for details
+
+with "../ascon_spark";
+
+project Ascon_SPARK_Tests is
+
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+   for Create_Missing_Dirs use "True";
+   
+   for Main use ("ascon128_demo.adb",
+                 "ascon_test_vectors.adb",
+                 "ascon_check_padding.adb");  
+
+   type Enabled_Kind is ("enabled", "disabled");
+   Compile_Checks : Enabled_Kind := External ("ASCON_SPARK_TESTS_COMPILE_CHECKS", "disabled");
+   Runtime_Checks : Enabled_Kind := External ("ASCON_SPARK_TESTS_RUNTIME_CHECKS", "disabled");
+   Style_Checks : Enabled_Kind := External ("ASCON_SPARK_TESTS_STYLE_CHECKS", "disabled");
+   Contracts_Checks : Enabled_Kind := External ("ASCON_SPARK_TESTS_CONTRACTS", "disabled");
+
+   type Build_Kind is ("debug", "optimize");
+   Build_Mode : Build_Kind := External ("ASCON_SPARK_TESTS_BUILD_MODE", "optimize");
+
+   Compile_Checks_Switches := ();
+   case Compile_Checks is
+      when "enabled" =>
+         Compile_Checks_Switches :=
+           ("-gnatVa", 
+            "-gnatwa.f", 
+            "-gnatwZ");
+      when others => null;
+   end case;
+
+   Runtime_Checks_Switches := ();
+   case Runtime_Checks is
+      when "enabled" => 
+         Runtime_Checks_Switches :=     
+		   ("-gnato",
+		    "-gnateA");
+      when others =>
+         Runtime_Checks_Switches :=
+           ("-gnatp"); -- Suppress checks
+   end case;
+
+   Style_Checks_Switches := ();
+   case Style_Checks is
+      when "enabled" =>
+         Style_Checks_Switches :=
+           ("-gnatyaAbCdfhiknOprux");
+      when others => null;
+   end case;
+
+   Contracts_Switches := ();
+   case Contracts_Checks is
+      when "enabled" =>
+         Contracts_Switches :=
+           ("-gnata"); --  Enable assertions and contracts
+      when others => null;
+   end case;
+
+   Build_Switches := ();
+   case Build_Mode is
+      when "optimize" =>
+         Build_Switches := ("-O3",    
+                            "-gnatn",
+                            "-funroll-loops"
+                            ); 
+      when "debug" =>
+         Build_Switches := ("-g",
+                            "-Og",
+                            "-fstack-check",
+                            "-gnatf"); 
+   end case;  
+  
+   package Builder is
+      for Default_Switches ("ada") use ("-j0");
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("Ada") use
+        Compile_Checks_Switches &
+        Build_Switches &
+        Runtime_Checks_Switches &
+        Style_Checks_Switches &
+        Contracts_Switches &
+        ("-gnat2012",
+         "-gnatw.X", -- Disable warnings for No_Exception_Propagation
+         "-gnatQ");  -- Don't quit. Generate ALI and tree files even if illegalities
+   end Compiler;
+
+   package Binder is
+      for Switches ("Ada") use ("-Es"); --  Symbolic traceback
+   end Binder;
+
+end Ascon_SPARK_Tests;

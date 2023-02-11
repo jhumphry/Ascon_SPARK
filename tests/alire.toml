@@ -1,0 +1,23 @@
+name = "ascon_spark_tests"
+description = "Tests and examples for the Ascon_SPARK crate"
+version = "0.0.0"
+website = "https://github.com/jhumphry/Ascon_SPARK"
+licenses = "ISC"
+tags = ["ascon", "security", "cryptography"]
+
+authors = ["James Humphry"]
+maintainers = ["James Humphry <alire@binecho.co.uk>"]
+maintainers-logins = ["jhumphry"]
+
+executables = ["ascon128_demo",
+               "ascon_test_vectors",
+               "ascon_check_padding"]
+
+[configuration]
+disabled = true
+
+[[depends-on]]
+ascon_spark = "*"
+
+[[pins]]
+ascon_spark = { path = "../" }
