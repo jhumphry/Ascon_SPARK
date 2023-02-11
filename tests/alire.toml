@@ -1,6 +1,6 @@
 name = "ascon_spark_tests"
 description = "Tests and examples for the Ascon_SPARK crate"
-version = "0.0.0"
+version = "0.9.0"
 website = "https://github.com/jhumphry/Ascon_SPARK"
 licenses = "ISC"
 tags = ["ascon", "security", "cryptography"]
