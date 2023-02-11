@@ -59,30 +59,34 @@ implementation of the padding.
 As the code is written in the SPARK 2014 subset of Ada 2012, it is possible to formally verify
 properties of the code and eliminate the possibility of run-time exceptions.
 
-The GPL SPARK prover `gnatprove` shipped with GNAT Community 2021 from [AdaCore](https://www.adacore.com/community)
-is used for this project. It is also able to prove the absence of all potential sources of run-time
-exceptions without manual intervention. This includes checking for the non-initialization of arrays,
-which was not possible before GNAT Community 2020. It also proves that `AEADDec` will not return any
-decrypted data if the tag verification failed.
+The GPL SPARK prover `gnatprove` shipped with GNAT Community 2021 from 
+[AdaCore](https://www.adacore.com/community) is used for this project. It is also able to prove the 
+absence of all potential sources of run-time exceptions without manual intervention. This includes 
+checking for the non-initialization of arrays, which was not possible before GNAT Community 2020. 
+It also proves that `AEADDec` will not return any decrypted data if the tag verification failed.
 
 ## Project files
 
-Three project files for use with `GPRBuild` are provided. `ascon_spark.gpr` builds the ASCON code
-as a static library. It takes two optional parameters:
+The project has been updated to work withe Alire package manager, so it can be built with the usual
+command `alr build`. The `tests` directory contains a sub-project that includes tests of the code.
 
-- `mode` can be set to `debug` (the default) or `optimise`/`optimize`. This sets appropriate
-compiler flags.
+Alternatively, the `gprbuild` project files can be used directly. These have the usual flags 
+available, but with one custom flag:
 
-- `load_store` can only be set to `explicit` (the default). This setting is reserved for possible
-future accelerated big-/little-endian conversions.
+- `ascon_spark_load_store` can only be set to `explicit` (the default). This setting is reserved 
+for possible future accelerated big-/little-endian conversions.
 
-The project file `ascon_spark_external.gpr` covers the same code, but does not trigger rebuilds of
-the library. `ascon_spark_examples.gpr` builds the example code.
+Note that the file `ascon-compare_tags.adb` is given special treatment, as it is never optimized 
+regardless of the optimization flags selected. This is deliberate, in an attempt to prevent the 
+compiler from optimizing the tag check to 'short-circuit' - that is, to prevent it from re-writing 
+the code to return early if two tags differ at an early position.  This optimization can produce a 
+timing small side-channel which can, in certain situations, leak information to opponents. This is 
+also the reason why the comparison of the two tag arrays is not written in the most obvious way.
 
 ## Using GNATprove for verification
 
-To verify the code, GNATprove can be invoked via the GnatStudio IDE. Alternatively the following command
-line can be used:
+To verify the code, GNATprove can be invoked via the GnatStudio IDE. Alternatively the following 
+command line can be used:
 
 - SPARK from GNAT Community 2021
 

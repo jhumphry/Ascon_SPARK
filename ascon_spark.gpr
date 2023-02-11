@@ -4,20 +4,39 @@
 -- created by Christoph Dobraunig, Maria Eichlseder, Florian Mendel and
 -- Martin Schläffer
 
--- Copyright (c) 2016-2018, James Humphry - see LICENSE file for details
+-- Copyright (c) 2016-2023, James Humphry - see LICENSE file for details
 
+with "config/ascon_spark_config.gpr";
 library project Ascon_SPARK is
+
+  for Library_Name use "ascon_spark";
+  for Library_Version use Project'Library_Name & ".so." & ascon_spark_Config.Crate_Version;
 
    type Mode_Type is ("debug", "optimize", "optimise");
    Mode : Mode_Type := external ("mode", "debug");
 
    type Load_Store_Type is ("explicit");
-   Load_Store : Load_Store_Type := external ("load_store", "explicit");
+   Load_Store : Load_Store_Type := external ("ascon_spark_load_store", "explicit");
+
+   Main_Source_Dirs := ("src/");
+   Load_Store_Dirs := "";
+
+   case Load_Store is
+      when "explicit" =>
+         Load_Store_Dirs := "src/load_store_explicit/";
+   end case;
+
+   for Source_Dirs use Main_Source_Dirs & Load_Store_Dirs;
+   for Object_Dir use "obj";
+   for Library_Dir use "lib";
+   for Create_Missing_Dirs use "True";
 
    for Languages use ("Ada");
 
-   for Library_Name use "ascon_spark";
-   for Library_Kind use "static";
+   type Library_Type_Type is ("relocatable", "static", "static-pic");
+   Library_Type : Library_Type_Type :=
+     external ("ASCON_SPARK_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
+   for Library_Kind use Library_Type;
 
    for Library_Interface use   ("Ascon",
                                 "Ascon.Compare_Tags",
@@ -29,46 +48,96 @@ library project Ascon_SPARK is
                                 "Ascon128av11",
                                 "Ascon128v12",
                                 "Ascon128av12");
+  
+   type Enabled_Kind is ("enabled", "disabled");
+   Compile_Checks : Enabled_Kind := External ("ASCON_SPARK_COMPILE_CHECKS", "disabled");
+   Runtime_Checks : Enabled_Kind := External ("ASCON_SPARK_RUNTIME_CHECKS", "disabled");
+   Style_Checks : Enabled_Kind := External ("ASCON_SPARK_STYLE_CHECKS", "disabled");
+   Contracts_Checks : Enabled_Kind := External ("ASCON_SPARK_CONTRACTS", "disabled");
 
-   Main_Source_Dirs := ("src/");
-   Load_Store_Dirs := "";
+   type Build_Kind is ("debug", "optimize");
+   Build_Mode : Build_Kind := External ("ASCON_SPARK_BUILD_MODE", "optimize");
 
-   case Load_Store is
-      when "explicit" =>
-         Load_Store_Dirs := "src/load_store_explicit/";
+   Compile_Checks_Switches := ();
+   case Compile_Checks is
+      when "enabled" =>
+         Compile_Checks_Switches :=
+           ("-gnatVa", 
+            "-gnatwa.f", 
+            "-gnatwZ");
+      when others => null;
    end case;
 
-   for Source_Dirs use Main_Source_Dirs & Load_Store_Dirs;
-   for Object_Dir use "build/";
-   for Library_Dir use "lib/";
+   Runtime_Checks_Switches := ();
+   case Runtime_Checks is
+      when "enabled" => 
+         Runtime_Checks_Switches :=     
+		   ("-gnato",
+		    "-gnateA");
+      when others =>
+         Runtime_Checks_Switches :=
+           ("-gnatp"); -- Suppress checks
+   end case;
 
+   Style_Checks_Switches := ();
+   case Style_Checks is
+      when "enabled" =>
+         Style_Checks_Switches :=
+           ("-gnatyaAbCdfhiknOprux");
+      when others => null;
+   end case;
+
+   Contracts_Switches := ();
+   case Contracts_Checks is
+      when "enabled" =>
+         Contracts_Switches :=
+           ("-gnata"); --  Enable assertions and contracts
+      when others => null;
+   end case;
+
+   Build_Switches := ();
+   case Build_Mode is
+      when "optimize" =>
+         Build_Switches := ("-O3",    
+                            "-gnatn",
+                            "-funroll-loops"
+                            ); 
+      when "debug" =>
+         Build_Switches := ("-g",
+                            "-Og",
+                            "-fstack-check",
+                            "-gnatf"); 
+   end case;  
+  
    package Builder is
-      for Default_Switches ("ada") use ("-j2");
+      for Default_Switches ("ada") use ("-j0");
    end Builder;
 
    package Compiler is
-      case Mode is
-         when "debug" =>
-            for Default_Switches ("ada") use ("-fstack-check", "-g",
-                                              "-gnat2012", "-gnata",
-                                              "-gnatf", "-gnato",
-                                              "-gnatVa", "-gnateA",
-                                              "-gnatwa.f", "-gnatwZ",
-                                              "-gnatyaAbCdfhiknprux",
-                                              "-fPIC");
-
-         when "optimize" | "optimise" =>
-            for Default_Switches ("ada") use ("-gnat2012", "-O2", "-gnatp",
-                                              "-gnatn", "-funroll-loops",
-                                              "-fPIC");
-            for Switches ("ascon-compare_tags.adb") use ("-gnat2012", "-O0",
-                                                        "-gnatp",
-                                                        "-gnatn",
-                                                        "-funroll-loops",
-                                                        "-fPIC");
-
-      end case;
+      for Default_Switches ("Ada") use
+        Compile_Checks_Switches &
+        Build_Switches &
+        Runtime_Checks_Switches &
+        Style_Checks_Switches &
+        Contracts_Switches &
+        ("-gnat2012",
+         "-gnatw.X", -- Disable warnings for No_Exception_Propagation
+         "-gnatQ");  -- Don't quit. Generate ALI and tree files even if illegalities
+         
+      for Switches ("ascon-compare_tags.adb") use
+        Compile_Checks_Switches &
+        "-O0" & "-gnatn" & -- Not the standard build switches - this file is never optimized
+        Runtime_Checks_Switches &
+        Style_Checks_Switches &
+        Contracts_Switches &
+        ("-gnat2012",
+         "-gnatw.X", -- Disable warnings for No_Exception_Propagation
+         "-gnatQ");  -- Don't quit. Generate ALI and tree files even if illegalities
    end Compiler;
+
+   package Binder is
+      for Switches ("Ada") use ("-Es"); --  Symbolic traceback
+   end Binder;
 
    package Prove is
       for Proof_Switches("ada") use ("-j0", "--timeout=3",
